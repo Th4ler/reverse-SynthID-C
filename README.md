@@ -55,6 +55,9 @@ Works on Linux, macOS, and Windows (MinGW/MSVC with minor path adjustments).
 
 ## Usage
 
+You need a codebook. The script `helpers/pkl2bin.pl` converts the original Python files to binary files for this program.
+A sample binary codebook is in the `lib/` directory.
+
 ### 1. Extract a codebook from reference images
 
 ```sh
