@@ -1,0 +1,52 @@
+MIT License (Research Use Only)
+
+Copyright (c) 2026 Hacker Factor
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software for research and educational purposes only, including without
+limitation the rights to use, copy, modify, merge, publish, and distribute
+copies of the Software, subject to the following conditions:
+
+1. The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+2. The Software shall be used solely for research, educational, and
+   non-commercial purposes. Commercial use is strictly prohibited without
+   explicit written permission.
+
+3. Any academic publications, presentations, or derivative works using this
+   Software must cite this project and acknowledge the research nature of
+   the work.
+
+4. This Software is designed to analyze and understand watermarking
+   technology. Users must comply with all applicable laws and regulations
+   regarding digital content and intellectual property.
+
+5. SynthID is proprietary technology owned by Google DeepMind. This project
+   does not claim ownership of SynthID or its underlying technology. The
+   patterns and methods discovered herein are derived from independent
+   analysis.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+DISCLAIMER:
+
+This project is for research and educational purposes only. The authors do
+not endorse or encourage any use of this software that would:
+
+- Violate intellectual property rights
+- Circumvent legitimate content identification systems
+- Enable the misrepresentation of AI-generated content
+- Violate any applicable laws or regulations
+
+Users are responsible for ensuring their use of this software complies with
+all applicable laws and ethical guidelines.
