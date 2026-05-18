@@ -1,0 +1,24 @@
+# Executables & Compiled Binaries (Linux/macOS/Windows)
+reverse_synthid
+reverse_synthid.exe
+*.exe
+*.obj
+*.o
+*.out
+
+# Python Cache & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+
+# Operating System Files
+Thumbs.db
+Desktop.ini
+.DS_Store

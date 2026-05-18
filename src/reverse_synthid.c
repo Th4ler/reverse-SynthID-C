@@ -24,12 +24,12 @@
  *   reverse_synthid extract <image_dir/> <codebook.bin>
  */
 
+#define _CRT_SECURE_NO_WARNINGS
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
-#  include <strings.h>
+#ifdef _MSC_VER
 #  ifndef strcasecmp
 #    define strcasecmp _stricmp
 #  endif
@@ -38,8 +38,57 @@
 #endif
 #include <math.h>
 #include <stdint.h>
-#include <dirent.h>
 #include <limits.h>
+
+#ifdef _MSC_VER
+#include <windows.h>
+struct dirent {
+    char d_name[MAX_PATH];
+};
+
+typedef struct DIR {
+    HANDLE hFind;
+    WIN32_FIND_DATAA findData;
+    int first;
+    struct dirent ent;
+} DIR;
+
+static DIR *opendir(const char *dir_path) {
+    char search_path[MAX_PATH];
+    sprintf_s(search_path, MAX_PATH, "%s\\*", dir_path);
+    DIR *d = malloc(sizeof(DIR));
+    if (!d) return NULL;
+    d->hFind = FindFirstFileA(search_path, &d->findData);
+    if (d->hFind == INVALID_HANDLE_VALUE) {
+        free(d);
+        return NULL;
+    }
+    d->first = 1;
+    return d;
+}
+
+static struct dirent *readdir(DIR *d) {
+    if (d->first) {
+        d->first = 0;
+    } else {
+        if (!FindNextFileA(d->hFind, &d->findData)) {
+            return NULL;
+        }
+    }
+    strcpy_s(d->ent.d_name, MAX_PATH, d->findData.cFileName);
+    return &d->ent;
+}
+
+static int closedir(DIR *d) {
+    if (d) {
+        FindClose(d->hFind);
+        free(d);
+    }
+    return 0;
+}
+#else
+#  include <dirent.h>
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -335,10 +384,10 @@ static int profile_write(FILE *f, const Profile *p)
     fwrite(&p->n_carriers, 4, 1, f);
     fwrite(p->carrier_r, 4, (size_t)p->n_carriers, f);
     fwrite(p->carrier_c, 4, (size_t)p->n_carriers, f);
-    for (int ch = 0; ch < 3; ch++) {
+    for (int ch = 0; ch < 3; ch++)
         fwrite(p->ref_phase[ch], 4, (size_t)p->n_carriers, f);
+    for (int ch = 0; ch < 3; ch++)
         fwrite(p->ref_mag[ch],   4, (size_t)p->n_carriers, f);
-    }
     fwrite(&p->threshold_correlation, 4, 1, f);
     fwrite(&p->threshold_phase,       4, 1, f);
     fwrite(&p->corr_mean,             4, 1, f);
@@ -359,8 +408,10 @@ static Profile *profile_read(FILE *f)
         fread(p->carrier_c, 4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
         { profile_free(p); return NULL; }
     for (int ch = 0; ch < 3; ch++)
-        if (fread(p->ref_phase[ch], 4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers ||
-            fread(p->ref_mag[ch],   4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
+        if (fread(p->ref_phase[ch], 4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
+            { profile_free(p); return NULL; }
+    for (int ch = 0; ch < 3; ch++)
+        if (fread(p->ref_mag[ch],   4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
             { profile_free(p); return NULL; }
     fread_optional(&p->threshold_correlation, 4, 1, f);
     fread_optional(&p->threshold_phase,       4, 1, f);
@@ -418,8 +469,10 @@ static Codebook *codebook_load(const char *path)
             fread(p->carrier_c, 4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
             { profile_free(p); free(cb); fclose(f); return NULL; }
         for (int ch = 0; ch < 3; ch++)
-            if (fread(p->ref_phase[ch], 4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers ||
-                fread(p->ref_mag[ch],   4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
+            if (fread(p->ref_phase[ch], 4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
+                { profile_free(p); free(cb); fclose(f); return NULL; }
+        for (int ch = 0; ch < 3; ch++)
+            if (fread(p->ref_mag[ch],   4, (size_t)p->n_carriers, f) != (size_t)p->n_carriers)
                 { profile_free(p); free(cb); fclose(f); return NULL; }
         fread_optional(&p->threshold_correlation, 4, 1, f);
         fread_optional(&p->threshold_phase,       4, 1, f);
@@ -638,7 +691,7 @@ static Image *bypass(const Image *img, const Codebook *cb, int strength)
             int idx = p->carrier_r[k] * p->W + p->carrier_c[k];
             cf32 z  = fft[idx];
             float img_mag = sqrtf(z.re*z.re + z.im*z.im);
-            float wm_mag  = p->ref_mag[ch][k] * frac * cw[ch];
+            float wm_mag  = p->ref_mag[ch][k] * frac * cw[ch] * 3.8525f * src->W * src->H;
             if (wm_mag > cap * img_mag) wm_mag = cap * img_mag;
             fft[idx].re -= wm_mag * cosf(p->ref_phase[ch][k]);
             fft[idx].im -= wm_mag * sinf(p->ref_phase[ch][k]);

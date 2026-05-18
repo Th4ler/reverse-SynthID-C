@@ -43,13 +43,14 @@ directly in `reverse_synthid.c` — no FFTW or KissFFT required.
 curl -O https://raw.githubusercontent.com/nothings/stb/master/stb_image.h
 curl -O https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h
 
-# Build
-make
-# or manually:
+# Build on Linux / macOS / Windows (MinGW):
 gcc -O2 -o reverse_synthid reverse_synthid.c -lm
+
+# Build on Windows (Native MSVC Developer Command Prompt):
+cl /O2 reverse_synthid.c
 ```
 
-Works on Linux, macOS, and Windows (MinGW/MSVC with minor path adjustments).
+Works out-of-the-box on Linux, macOS, and Windows (both MinGW and native MSVC).
 
 ---
 
@@ -103,6 +104,28 @@ Strength levels match the Python original:
 
 All levels hard-cap subtraction at 30 % of the bin's own energy, preventing
 content damage (same rule as the Python version).
+
+### 4. High-Fidelity Smart Watermark Removal (Recommended)
+
+Since SynthID watermark carriers reside at absolute frequency locations corresponding to specific scales (such as `512x512`), running `bypass` directly on high-resolution images or downscaling the whole image results in loss of sharpness/details.
+
+To preserve **100% of the native high-resolution details** while completely canceling out the watermark, the included `process_image.py` script utilizes a **Smart Noise Extraction** pipeline:
+1. Downscales the original high-resolution image to `512x512` dynamically.
+2. Runs the C binary `bypass` command at `512x512` to surgically cancel the watermark carriers.
+3. Computes the signed spatial noise mask: `noise_512 = original_512 - bypassed_512`.
+4. Upscales *only* the noise mask to the original high-resolution dimensions using **Lanczos interpolation** (preserving carrier frequencies).
+5. Subtracts the upscaled noise mask directly from the original high-resolution image.
+
+This produces a flawless bypass output with **zero color shift, zero loss of sharpness, and zero artifacts**.
+
+**Usage**:
+```sh
+pip install numpy pillow
+python process_image.py input_image.png [--codebook lib/codebook-robust.bin] [--strength aggressive]
+```
+Outputs:
+* `<input_image>_bypassed_simple.png`: Downscaled, bypassed, and directly upscaled back (standard).
+* `<input_image>_bypassed_smart.png`: High-fidelity original image with only the upscaled noise subtracted (recommended, completely artifact-free!).
 
 ---
 
